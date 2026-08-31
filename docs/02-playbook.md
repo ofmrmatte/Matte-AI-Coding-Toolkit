@@ -1,128 +1,131 @@
-# Playbook — do pedido à entrega
+# Playbook
 
-Este é o caminho padrão para tarefas não triviais.
+Este é o roteiro que eu uso como referência quando a tarefa já é grande o bastante para dar problema se o agente sair editando sem contexto.
 
-## Etapa 1 — Entender
+Não precisa seguir cada item em mudança pequena. O objetivo é evitar três erros recorrentes: implementar na camada errada, perder requisito durante a execução e terminar sem conseguir provar que o comportamento ficou certo.
 
-Transforme o pedido em três blocos:
+## Comece pelo estado atual
 
-- **estado atual** — o que existe hoje;
-- **estado desejado** — o que deve mudar;
-- **restrições** — o que não pode quebrar ou ser alterado.
+Antes de planejar, descubra o que existe.
 
-Se o pedido estiver claro o suficiente para trabalhar, não interrompa o fluxo com perguntas desnecessárias. Resolva ambiguidades de baixo risco por inspeção do repositório.
+Leia `AGENTS.md` se houver. Veja os scripts reais do projeto, os testes, o build, o caminho de deploy e a documentação que ainda parece atual. Depois siga a funcionalidade pelo código até entender onde o comportamento nasce e onde ele é exibido.
 
-## Etapa 2 — Inspecionar
+Em bug, tente reproduzir antes de discutir solução. Em projeto novo, essa etapa vira levantamento de restrições e escolhas já feitas. Em UI, abra a tela cedo.
 
-Antes de editar:
-
-1. leia `AGENTS.md` e documentação relevante;
-2. identifique stack, scripts, build e testes;
-3. encontre o ponto de entrada da funcionalidade;
-4. siga o fluxo até persistência, integrações e UI quando aplicável;
-5. procure comportamento semelhante já implementado;
-6. identifique riscos de regressão.
-
-Saída esperada: um mapa curto do sistema e uma hipótese de mudança.
-
-## Etapa 3 — Critérios de aceite
-
-Escreva critérios observáveis.
-
-Ruim:
-
-> Melhorar o login.
-
-Melhor:
-
-> O formulário não deve gerar scroll em 390×844, deve manter campos acessíveis com teclado aberto e deve mostrar estado de carregamento após envio.
-
-Um critério bom pode ser testado.
-
-## Etapa 4 — Plano
-
-Quebre o trabalho em unidades verificáveis. Cada unidade deve indicar:
-
-- objetivo;
-- arquivos/módulos;
-- dependências;
-- validação.
-
-Evite planos que apenas repetem títulos como "frontend", "backend", "testes" sem dizer o que muda.
-
-## Etapa 5 — Delegação
-
-Use subagentes quando houver ganho real.
-
-Exemplo:
+A saída dessa fase não precisa ser um documento bonito. Precisa ser suficiente para responder:
 
 ```text
-Agente principal
-├── agente A: banco/migração
-├── agente B: UI isolada
-└── agente C: testes/revisão
+como funciona hoje?
+onde está a regra?
+o que não pode quebrar?
+qual é a menor mudança plausível?
 ```
 
-Se A e B precisarem editar o mesmo arquivo central, não são trabalhos paralelos.
+## Transforme o pedido em comportamento observável
 
-## Etapa 6 — Implementar
+"Melhorar login" não ajuda muito na hora de testar.
 
-Durante a implementação:
+Algo como isto ajuda:
 
-- mantenha mudanças pequenas e coerentes;
-- valide cedo os pontos de maior risco;
-- não empilhe cinco hipóteses sem testar nenhuma;
-- preserve contratos públicos a menos que a mudança de contrato seja parte do requisito;
-- atualize o plano quando a realidade divergir da hipótese inicial.
+```text
+em 390x844 o formulário não cria scroll desnecessário;
+com teclado aberto os campos continuam acessíveis;
+após submit existe estado de loading;
+erro de autenticação mantém o usuário na tela e mostra feedback.
+```
 
-## Etapa 7 — Verificar
+Nem todo requisito precisa virar tabela formal. Mas, se não dá para imaginar como verificar uma frase, provavelmente ela ainda está vaga demais.
 
-Use os gates reais do projeto.
+## Planeje só o necessário
 
-Tabela recomendada no relatório interno:
+Para uma mudança localizada, um checklist de três itens costuma bastar.
 
-| Gate | Resultado | Evidência |
-|---|---|---|
-| Lint | PASS/FAIL/NOT RUN | comando/erro |
-| Typecheck | PASS/FAIL/NOT RUN | comando/erro |
-| Tests | PASS/FAIL/NOT RUN | quantidade/erro |
-| Build | PASS/FAIL/NOT RUN | artefato/erro |
-| Smoke/E2E | PASS/FAIL/NOT RUN | fluxo testado |
-| Visual | PASS/FAIL/NOT RUN | viewport/tela |
+Para trabalho que envolve banco, arquitetura, várias telas, release, migração ou integração externa, vale anotar:
 
-`NOT RUN` exige motivo.
+- quais módulos devem mudar;
+- em que ordem;
+- qual risco deve ser validado cedo;
+- como saber se cada parte funcionou;
+- como voltar se a mudança for destrutiva.
 
-## Etapa 8 — Revisar
+Plano bom ajuda a executar. Plano que só renomeia o pedido em dez etapas é documentação ornamental.
 
-Faça uma leitura do diff como se tivesse sido escrito por outra pessoa.
+## Use paralelismo depois de entender as fronteiras
 
-Perguntas mínimas:
+Subagentes funcionam bem quando cada um tem um pedaço independente.
 
-- resolve o requisito ou apenas parte dele?
-- existe caminho quebrado não testado?
-- houve aumento desnecessário de complexidade?
-- algum erro foi escondido?
-- algum dado pode ser perdido?
-- faltou atualizar documentação?
+Exemplo razoável:
 
-Para mudanças relevantes, um agente/revisor independente é preferível.
+```text
+A -> investigar regra de banco
+B -> revisar comportamento responsivo
+C -> mapear testes existentes
+```
 
-## Etapa 9 — Entregar
+Exemplo ruim:
 
-O relatório final deve ser curto e factual:
+```text
+A -> mexer no estado global
+B -> mexer no componente que usa o mesmo estado
+C -> refatorar os tipos usados pelos dois
+```
 
-1. o que mudou;
+Se o trabalho depende da mesma decisão ou do mesmo arquivo central, faça em sequência ou reorganize a tarefa antes de paralelizar.
+
+## Implemente e valide cedo
+
+Não acumule várias hipóteses antes de testar nenhuma.
+
+Se a parte arriscada é uma migração, prove a migração cedo. Se é integração com navegador, valide conexão e comportamento mínimo antes de construir o restante. Se é layout, renderize o shell antes de refazer nove telas em cima dele.
+
+Mudanças menores são mais fáceis de revisar e de desfazer.
+
+## Rode os gates do projeto, não uma checklist genérica
+
+Descubra os comandos reais. O relatório pode ser simples:
+
+```text
+lint: PASS
+typecheck: PASS
+tests: PASS (84)
+build: PASS
+E2E: NOT RUN - ambiente externo indisponível
+```
+
+`NOT RUN` é um estado legítimo. O problema é esconder que a verificação não aconteceu.
+
+Para frontend, inclua navegação real quando a alteração for visual. Para automação, inclua o fluxo operacional. Para release, valide o artefato que será publicado.
+
+## Revise o diff sem defender a própria solução
+
+Depois de implementar, procure coisas que você mesmo não estava procurando enquanto codava:
+
+- arquivo alterado sem relação com a tarefa;
+- comportamento removido por simplificação;
+- teste enfraquecido;
+- dependência nova sem motivo forte;
+- tratamento de erro perdido;
+- caminho de dados duplicado;
+- documentação que agora mente.
+
+Em mudança grande, um segundo agente ou outra pessoa revisando só o estado final costuma encontrar mais do que mais uma rodada do implementador.
+
+## Entregue o que foi provado
+
+Um relatório final útil responde:
+
+1. o que mudou no comportamento;
 2. o que foi testado;
-3. quais gates passaram;
-4. limitações conhecidas;
-5. próximos passos realmente necessários.
+3. quais verificações passaram;
+4. o que não pôde ser testado;
+5. se ficou alguma limitação que realmente importa.
 
-Não use quantidade de arquivos alterados como evidência de qualidade.
+Evite usar número de arquivos, linhas alteradas ou quantidade de agentes como medida de qualidade.
 
-## Etapa 10 — Persistir aprendizado
+## Guarde apenas o que uma sessão futura precisa saber
 
-Atualize `ARCHITECTURE.md` ou `DECISIONS.md` apenas se algo durável mudou.
+Se a tarefa mudou uma decisão arquitetural, atualize `ARCHITECTURE.md` ou `DECISIONS.md`.
 
-Atualize `TODO.md` se restou trabalho concreto.
+Se sobrou trabalho concreto, atualize `TODO.md`.
 
-Não transforme documentação em log cronológico de cada comando executado.
+Não registre uma transcrição da sessão. O histórico do Git já mostra o que mudou; a memória do projeto deve explicar o que não é óbvio olhando só o diff.
