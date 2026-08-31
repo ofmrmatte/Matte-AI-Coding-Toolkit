@@ -1,101 +1,71 @@
-# Codex workflow
+# Como eu uso o toolkit com Codex
 
-Este documento descreve o uso de referência do Matte AI Coding Toolkit com Codex.
+A parte importante acontece antes do prompt: o repositório precisa carregar as regras e o contexto que não podem depender da memória da sessão.
 
-## 1. Comece pelo repositório, não pelo prompt
+Por isso, em projeto que já tem alguma complexidade, eu prefiro deixar `AGENTS.md` na raiz e só adicionar `PROJECT.md`, `ARCHITECTURE.md` ou `DECISIONS.md` quando existe informação que realmente precisa sobreviver.
 
-Antes de pedir implementação, garanta que o projeto tenha instruções persistentes em `AGENTS.md` e, quando útil, `PROJECT.md`, `ARCHITECTURE.md`, `DECISIONS.md` e `TODO.md`.
+O prompt da tarefa então pode ser curto. Ele diz o objetivo; o repositório diz como trabalhar.
 
-O prompt da tarefa deve complementar esse contexto — não duplicá-lo inteiro.
+## Primeira passada: olhar antes de editar
 
-## 2. Primeiro turno útil
+Em tarefa relevante, a primeira resposta útil do Codex não é um patch. É uma leitura do estado atual.
 
-Para tarefas relevantes, o Codex deve primeiro:
-
-1. ler instruções;
-2. inspecionar a estrutura do repositório;
-3. localizar a implementação atual;
-4. identificar comandos de verificação;
-5. resumir riscos e critérios de aceite;
-6. iniciar implementação apenas depois disso.
-
-## 3. Escopo de autonomia
-
-O Codex pode resolver ambiguidades de baixo risco usando o próprio repositório como fonte de verdade.
-
-Perguntas são necessárias quando uma decisão:
-
-- muda regra de negócio sem evidência;
-- envolve perda de dados;
-- envolve credencial ou autorização inexistente;
-- cria custo relevante;
-- publica ou executa uma ação externa irreversível;
-- tem duas interpretações materialmente diferentes que o código não resolve.
-
-## 4. Ferramentas
-
-Use a ferramenta mais próxima da fonte de verdade:
-
-- Git/GitHub para histórico e mudanças de código;
-- banco/console oficial para estado de dados;
-- browser automation para comportamento visual/real;
-- documentação oficial para APIs atuais;
-- shell para build, lint e testes.
-
-Não copie manualmente informação que uma ferramenta confiável pode consultar de forma direta.
-
-## 5. Trabalho longo
-
-Em tarefas longas, mantenha o usuário informado com atualizações curtas em marcos úteis, por exemplo:
-
-- problema reproduzido;
-- causa raiz identificada;
-- primeira etapa funcional;
-- quality gate encontrado/falhando;
-- revisão concluída.
-
-Evite narrar cada comando.
-
-## 6. Subagentes
-
-Use subagentes para reduzir carga cognitiva e aumentar independência de revisão.
-
-Boas fronteiras:
+Quero que ele descubra:
 
 ```text
-principal: coordenação + decisões
-agente 1: investigação do bug
-agente 2: testes/regressão
-agente 3: revisão final
+onde a funcionalidade começa
+quais módulos entram no caminho
+quais scripts verificam o projeto
+quais riscos estão perto da mudança
+qual comportamento precisa continuar intacto
 ```
 
-Fronteira ruim:
+Depois disso, a implementação fica muito menos dependente de chute.
+
+## Quando deixar o Codex decidir sozinho
+
+Ambiguidade pequena pode ser resolvida olhando o próprio código.
+
+Se existem três componentes que já seguem o mesmo padrão e a quarta tela precisa de comportamento equivalente, não faz sentido interromper a tarefa para perguntar qual convenção usar.
+
+Eu paro para decidir com o operador quando a escolha muda regra de negócio, pode perder dados, cria custo relevante, precisa de credencial que não existe ou dispara uma ação externa difícil de desfazer.
+
+## Ferramentas
+
+Uso a fonte mais próxima do fato que quero verificar.
+
+- código e Git para implementação e histórico;
+- shell para testes e build;
+- navegador para comportamento de UI;
+- documentação atual para API que muda com versão;
+- conectores/MCP para estado que vive fora do repositório.
+
+Os guias de [MCP](mcp.md), [subagentes](agents.md) e [documentação/contexto](../tools/03-context-and-docs.md) entram quando a tarefa realmente precisa deles.
+
+## Tarefa longa
+
+Em trabalho longo, prefiro atualizações quando alguma coisa muda o entendimento ou reduz risco:
 
 ```text
-agente 1: editar componente.tsx
-agente 2: editar o mesmo componente.tsx
+bug reproduzido
+causa encontrada
+primeira parte funcionando
+gate importante falhando
+revisão terminou
 ```
 
-## 7. Evidência
+Narrar cada `grep`, `cat` e `npm test` só ocupa espaço.
 
-Quando houver ferramenta para testar o resultado, use-a.
+## Separar três fatos
 
-Exemplos:
+No final, eu quero saber separadamente se:
 
-- UI: screenshot/render real;
-- API: request real ou teste de integração;
-- build: comando de produção;
-- migração: banco de teste ou dry-run suportado;
-- automação: fluxo controlado em sandbox/dry-run antes de produção.
+1. o código foi implementado;
+2. o comportamento foi validado;
+3. a mudança foi publicada, quando publicação fazia parte do pedido.
 
-## 8. Encerramento
+Essas coisas podem acontecer na mesma sessão, mas não são o mesmo estado.
 
-O Codex deve diferenciar:
+Um build local verde não prova deploy. Um deploy concluído não prova que a aplicação está saudável. E uma alteração de UI compilada não prova que o layout ficou certo.
 
-- implementação concluída;
-- validação concluída;
-- publicação concluída.
-
-São três fatos diferentes.
-
-Uma tarefa de código pode estar `DONE` sem estar publicada. Uma tarefa que pede publicação só está `DONE` quando a publicação e o smoke test correspondente forem confirmados.
+Essa distinção simples evita muito "pronto" prematuro.
