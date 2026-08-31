@@ -1,6 +1,6 @@
 # Como adotar em um projeto
 
-Não existe instalação do Matte AI Coding Toolkit. Você copia o que precisa para o repositório onde o agente vai trabalhar e adapta os arquivos ao projeto real.
+Não existe uma instalação obrigatória do Matte AI Coding Toolkit. Você copia o que precisa para o repositório onde o agente vai trabalhar e adapta os arquivos ao projeto real.
 
 Se a primeira coisa que você fizer for copiar cinco templates sem preencher nenhum, provavelmente eles vão virar ruído. Comece pequeno.
 
@@ -17,6 +17,36 @@ Copie [`../templates/AGENTS.md`](../templates/AGENTS.md) para a raiz e troque os
 
 Depois use o workflow de [`workflows/existing-project.md`](workflows/existing-project.md) na primeira tarefa maior.
 
+## Bootstrap opcional
+
+Se você já decidiu usar o conjunto completo de arquivos de contexto, há dois scripts em [`../scripts/`](../scripts/):
+
+Windows / PowerShell:
+
+```powershell
+./scripts/bootstrap.ps1 C:\Projetos\MeuProjeto
+```
+
+Linux/macOS/Git Bash:
+
+```bash
+./scripts/bootstrap.sh /caminho/do/projeto
+```
+
+Eles copiam:
+
+```text
+AGENTS.md
+PROJECT.md
+ARCHITECTURE.md
+DECISIONS.md
+TODO.md
+```
+
+Arquivos existentes são preservados por padrão. O script informa o que foi copiado e o que foi ignorado. Use `-Force` no PowerShell ou `--force` no Bash somente quando a intenção for substituir os arquivos existentes pelos templates.
+
+O bootstrap economiza a cópia manual. Ele não preenche contexto pelo projeto e não substitui a leitura dos arquivos depois da cópia.
+
 ## Quando adicionar os outros arquivos
 
 `PROJECT.md` ajuda quando objetivo e escopo não são óbvios olhando o README.
@@ -27,7 +57,7 @@ Depois use o workflow de [`workflows/existing-project.md`](workflows/existing-pr
 
 `TODO.md` é útil quando há follow-ups que precisam sobreviver entre sessões e não estão sendo controlados por issue tracker.
 
-Os templates estão em [`../templates/`](../templates/).
+Os templates estão em [`../templates/`](../templates/). Um exemplo já preenchido está em [`../examples/sample-project/`](../examples/sample-project/PROJECT.md).
 
 ## Quality gates
 
