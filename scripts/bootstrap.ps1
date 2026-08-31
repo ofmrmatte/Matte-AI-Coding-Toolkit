@@ -9,7 +9,14 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $templateRoot = Join-Path $repoRoot "templates"
-$targetRoot = [System.IO.Path]::GetFullPath((Join-Path (Get-Location) $TargetPath))
+
+if ([System.IO.Path]::IsPathRooted($TargetPath)) {
+    $targetRoot = [System.IO.Path]::GetFullPath($TargetPath)
+}
+else {
+    $targetRoot = [System.IO.Path]::GetFullPath((Join-Path (Get-Location) $TargetPath))
+}
+
 $files = @("AGENTS.md", "PROJECT.md", "ARCHITECTURE.md", "DECISIONS.md", "TODO.md")
 
 New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
