@@ -1,0 +1,29 @@
+name: Sugestão
+description: Proponha uma melhoria para o toolkit.
+title: "[idea] "
+labels: []
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema atual
+      description: Qual dificuldade existe hoje?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: O que você mudaria ou adicionaria?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Exemplo de uso
+      description: Em que tipo de projeto ou tarefa isso ajudaria?
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impacto esperado
+      description: O que melhora com essa mudança?
