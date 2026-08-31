@@ -1,0 +1,49 @@
+name: docs-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check required files and local links
+        run: python scripts/check_docs.py
+
+      - name: Check Bash syntax
+        run: bash -n scripts/bootstrap.sh
+
+      - name: Smoke test Bash bootstrap
+        shell: bash
+        run: |
+          target="$RUNNER_TEMP/bootstrap-bash"
+          bash scripts/bootstrap.sh "$target"
+          for file in AGENTS.md PROJECT.md ARCHITECTURE.md DECISIONS.md TODO.md; do
+            test -f "$target/$file"
+          done
+
+      - name: Smoke test PowerShell bootstrap
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP "bootstrap-pwsh"
+          ./scripts/bootstrap.ps1 -TargetPath $target
+          $files = @("AGENTS.md", "PROJECT.md", "ARCHITECTURE.md", "DECISIONS.md", "TODO.md")
+          foreach ($file in $files) {
+            if (-not (Test-Path (Join-Path $target $file))) {
+              throw "Missing bootstrap output: $file"
+            }
+          }
