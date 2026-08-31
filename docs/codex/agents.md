@@ -1,77 +1,55 @@
-# Agentes e orquestração
+# Agentes no fluxo com Codex
 
-Agentes adicionais são uma ferramenta de decomposição, não um fim em si mesmos.
+O guia geral de decomposição e ondas está em [`../tools/07-subagent-orchestration.md`](../tools/07-subagent-orchestration.md). Aqui ficam só as decisões que costumo aplicar quando o agente principal está coordenando uma tarefa no Codex.
 
-## Quando usar
+## Use o agente principal para manter a linha da decisão
 
-Use agentes especializados quando houver tarefas independentes com fronteiras claras, por exemplo:
+Quando a tarefa é grande, o agente principal deve continuar responsável por:
 
-- revisar uma migração sem editar a UI;
-- revisar segurança depois da implementação;
-- criar testes para um módulo já estabilizado;
-- avaliar UX de telas existentes;
-- mapear impacto de uma mudança arquitetural.
+- entender o pedido completo;
+- escolher a fronteira entre tarefas;
+- consolidar findings conflitantes;
+- decidir a implementação final;
+- rodar os gates integrados;
+- revisar o resultado como um todo.
 
-## Quando não usar
+Delegar não significa distribuir a responsabilidade pela arquitetura sem dono.
 
-Evite múltiplos agentes quando:
+## O melhor primeiro uso de subagente costuma ser investigação
 
-- a tarefa é pequena;
-- todos precisam editar os mesmos arquivos;
-- a arquitetura ainda não foi decidida;
-- o custo de coordenação supera o trabalho;
-- há uma sequência rígida de dependências.
+Antes de sair paralelizando implementação, use agentes separados para levantar fatos que podem ser reunidos depois.
 
-## Modelo de ondas
+Exemplos:
 
-### Onda 0 — descoberta
+```text
+investigar causa de um bug sem editar
+mapear testes existentes
+auditar segurança de uma mudança pronta
+revisar comportamento responsivo
+ler documentação de uma integração específica
+```
 
-O agente principal mapeia o problema e define fronteiras.
+Essas tarefas têm saída clara e não criam conflito de branch ou arquivo.
 
-### Onda 1 — trabalho independente
+## Passe contexto suficiente, não a sessão inteira
 
-Agentes recebem tarefas sem colisão de arquivo ou estado.
-
-### Onda 2 — integração
-
-O agente principal resolve dependências, integra resultados e executa gates.
-
-### Onda 3 — revisão
-
-Um agente independente revisa o resultado integrado.
-
-## Contrato de tarefa para subagente
-
-Toda delegação deve conter:
-
-- objetivo;
-- escopo permitido;
-- arquivos ou módulos sob responsabilidade;
-- comportamento que não pode mudar;
-- saída esperada;
-- como validar;
-- se pode ou não editar código.
+Uma delegação deve carregar o objetivo, a área permitida e o que precisa voltar. Não precisa copiar todo o histórico da conversa.
 
 Exemplo:
 
 ```text
-Objetivo: revisar o fluxo de autenticação para regressões.
-Escopo: src/auth/** e testes relacionados.
-Não editar código.
-Verifique: estados de erro, sessão expirada, redirects e testes ausentes.
-Retorne: findings classificados por severidade com arquivo/linha e justificativa.
+Investigue por que o filtro anual mistura Q1 e Q2.
+Não edite código.
+Siga o fluxo da UI até a query/agregação.
+Retorne causa provável, arquivos envolvidos e testes que reproduzem.
 ```
 
-## Regra de ownership
+## Revisão separada vale mais que duplicar implementação
 
-Um arquivo só deve ter um owner de implementação por onda.
+Se há orçamento para um segundo agente, eu prefiro usá-lo depois da implementação para revisar o diff e os critérios de aceite.
 
-Revisores podem ler o mesmo arquivo. Dois implementadores não devem alterá-lo em paralelo sem coordenação explícita.
+Dois agentes construindo soluções concorrentes para o mesmo arquivo quase sempre aumentam o trabalho de integração.
 
-## Revisão independente
+## Regra prática
 
-Para mudanças importantes, o melhor uso de um segundo agente costuma ser revisão, não implementação paralela.
-
-O revisor deve tentar provar que a mudança está errada, incompleta ou perigosa. Findings devem ser específicos e reproduzíveis.
-
-Não aceite "LGTM" sem análise dos critérios de aceite e do diff.
+Se você não consegue escrever em uma frase o que um subagente pode fazer sem depender de uma decisão ainda aberta, a tarefa ainda não está pronta para delegação.
