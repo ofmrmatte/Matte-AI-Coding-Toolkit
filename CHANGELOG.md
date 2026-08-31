@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-Nenhuma mudança publicada desde `1.0.0`.
+- workflow de release baseado em `VERSION`, com criação automática de tag e GitHub Release;
+- badge e documentação da versão estável no README;
+- templates de issue para bugs e sugestões.
 
 ## 1.0.0 — 2026-08-31
 
