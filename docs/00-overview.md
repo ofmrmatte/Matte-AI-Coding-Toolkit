@@ -1,99 +1,69 @@
 # Visão geral
 
-O Matte AI Coding Toolkit organiza desenvolvimento com agentes de IA como um processo de engenharia verificável.
+Este toolkit nasceu de um problema simples: agentes de código conseguem produzir muita coisa rápido, mas isso não significa que entendem o projeto, preservam o que já funciona ou testam o que realmente importa.
 
-## O problema
+Depois de algumas sessões longas, os mesmos problemas costumam aparecer: requisito que some no caminho, refactor que ninguém pediu, bug "corrigido" sem reprodução, interface aprovada sem abrir o navegador, decisão importante presa no chat e release feita a partir de um build que ninguém consegue rastrear depois.
 
-Agentes conseguem escrever código rapidamente, mas velocidade de geração não é igual a qualidade de entrega. Os modos de falha mais comuns são:
+A proposta deste repositório é colocar algumas dessas regras fora da conversa e dentro do projeto.
 
-- começar a implementar antes de entender o sistema;
-- alterar arquitetura sem necessidade;
-- perder requisitos no meio de sessões longas;
-- declarar sucesso depois de compilar;
-- corrigir sintomas sem reproduzir o bug;
-- executar trabalho paralelo que colide nos mesmos arquivos;
-- deixar decisões importantes apenas no chat;
-- publicar sem um gate de release explícito.
+## O que fica no repositório
 
-O toolkit trata esses problemas como falhas de processo, não como falhas de prompt.
+`AGENTS.md` contém regras de trabalho. É onde ficam coisas como "não enfraquecer teste para passar CI" e "não declarar bug corrigido sem validar o comportamento".
 
-## Modelo operacional
+Os arquivos `PROJECT.md`, `ARCHITECTURE.md`, `DECISIONS.md` e `TODO.md` existem para projetos que precisam carregar contexto por várias sessões. Eles não são obrigatórios. Um script pequeno não precisa virar uma empresa de documentação.
+
+Os workflows em `docs/workflows/` separam situações que pedem cuidados diferentes. Em projeto novo dá para escolher fundação. Em projeto existente, a primeira obrigação é entender o que já existe. Em bug, reproduzir vale mais do que planejar arquitetura. Em UI, abrir a interface é parte do teste.
+
+Os prompts em `prompts/` são atalhos. Não quero que eles carreguem toda a inteligência do processo; essa parte deve estar nas regras e no próprio repositório, onde pode ser revisada e versionada.
+
+## Como penso uma tarefa maior
+
+Normalmente o caminho é este:
 
 ```text
-Contexto persistente
-      ↓
-Entendimento do pedido
-      ↓
-Inspeção do sistema
-      ↓
-Critérios de aceite
-      ↓
-Plano executável
-      ↓
-Implementação controlada
-      ↓
-Quality gates
-      ↓
-Revisão independente
-      ↓
-Evidência
-      ↓
-Registro de decisões
+pedido
+-> inspeção do projeto
+-> comportamento atual
+-> mudança desejada
+-> implementação
+-> validação
+-> revisão do diff
+-> atualização de contexto, se necessário
 ```
 
-## Cinco camadas
+Em uma tarefa pequena, várias dessas etapas cabem em poucos minutos e nem precisam virar documento. Em uma mudança arriscada, cada uma pode precisar de evidência própria.
 
-### 1. Governança
+A diferença importante é não pular direto de "entendi mais ou menos" para "comecei a editar".
 
-`AGENTS.md` define como o agente trabalha, quais comportamentos são proibidos e o que significa "concluído".
+## Codex-first, não Codex-only
 
-### 2. Contexto persistente
+Uso Codex como referência porque ele trabalha bem com instruções no repositório, Git, shell e ferramentas conectadas. Mas os arquivos daqui não dependem de um recurso exclusivo do Codex.
 
-`PROJECT.md`, `ARCHITECTURE.md`, `DECISIONS.md` e `TODO.md` guardam o que precisa sobreviver à conversa atual.
+Se outro agente consegue ler contexto local, executar o projeto e respeitar as regras, ele pode usar o mesmo material.
 
-### 3. Workflows
+Evito documentar comportamento de produto que muda toda semana. Quando uma tarefa depende de API ou recurso atual de uma ferramenta, a regra é consultar a documentação atual em vez de confiar na memória do agente.
 
-Cada tipo de tarefa tem riscos diferentes. Criar um projeto, corrigir um bug, refazer UI e publicar em produção não devem usar o mesmo roteiro.
+## Simplicidade
 
-### 4. Prompts operacionais
+"Mais simples" não significa "menos seguro".
 
-Prompts são usados como aceleradores para iniciar um workflow, não como substitutos do workflow.
+Uma solução é mais simples quando cumpre o requisito com menos peças para manter, sem empurrar o problema para outro lugar.
 
-### 5. Evidência
+Antes de adicionar serviço, fila, banco, abstração ou dependência, vale responder:
 
-A saída final precisa dizer o que mudou e mostrar o que foi validado. `PASS`, `FAIL` e `NOT RUN` são melhores do que "parece estar funcionando".
+- já existe algo no projeto que resolve isso?
+- a nova peça atende um requisito de agora ou um cenário imaginado?
+- ela melhora o caminho de falha ou só o caminho feliz?
+- se der errado, consigo voltar?
 
-## Codex-first
+Às vezes a resposta correta é adicionar infraestrutura. Às vezes é uma função de vinte linhas. O toolkit não tenta escolher antes de olhar o caso.
 
-O toolkit prioriza agentes capazes de:
+## Quando uma tarefa termina
 
-- ler instruções do repositório;
-- inspecionar múltiplos arquivos;
-- executar shell e testes;
-- trabalhar com Git;
-- usar ferramentas conectadas quando disponíveis;
-- operar tarefas longas com planejamento e verificação.
+Eu evito usar apenas "done" porque ele esconde estados diferentes.
 
-O Codex é a experiência de referência. Nada impede o uso com outros agentes, desde que eles respeitem o mesmo contrato operacional.
+Uma entrega pode estar concluída, pode ter uma parte útil pronta com limitação conhecida, pode estar bloqueada por algo externo ou pode simplesmente ter falhado nos critérios.
 
-## Regra de simplicidade
+O relatório final precisa deixar isso evidente. Se o E2E não rodou porque faltou ambiente, escreva isso. Se o build passou, mas a UI não foi aberta, não chame de validação visual.
 
-Simplicidade significa menor complexidade total para cumprir requisitos reais. Não significa remover validação, observabilidade ou testes.
-
-Antes de criar uma abstração, serviço, banco, fila, microserviço ou dependência nova, pergunte:
-
-1. O requisito atual realmente precisa disso?
-2. O projeto já possui uma solução equivalente?
-3. A nova peça reduz complexidade total ou apenas move a complexidade de lugar?
-4. Existe rollback claro?
-
-## Estado de conclusão
-
-Uma tarefa pode terminar em quatro estados:
-
-- `DONE` — critérios atendidos e evidenciados;
-- `PARTIAL` — parte útil entregue, com lacunas explícitas;
-- `BLOCKED` — impedimento externo específico comprovado;
-- `FAILED` — tentativa não atingiu os critérios.
-
-Evite transformar `PARTIAL` ou `BLOCKED` em `DONE` por linguagem otimista.
+Essa transparência é mais útil do que um status otimista.
