@@ -1,68 +1,130 @@
-<div align="center">
-
 # Matte AI Coding Toolkit
 
-### Um workflow prático para desenvolver software com agentes de IA — com Codex como experiência principal.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Codex First](https://img.shields.io/badge/workflow-Codex--first-111111.svg)](https://openai.com/codex/)
-[![AI Engineering](https://img.shields.io/badge/foco-AI%20Engineering-4F46E5.svg)](#)
-[![Made in Brazil](https://img.shields.io/badge/feito%20no-Brasil-009c3b.svg)](#)
+Um conjunto de arquivos, prompts e rotinas que uso como referência para trabalhar com agentes de código sem depender de uma conversa perfeita do começo ao fim.
 
-</div>
+O foco principal é Codex, mas quase tudo aqui é independente de modelo. Se o agente consegue ler o repositório, executar comandos, consultar ferramentas e trabalhar com Git, o fluxo continua válido.
 
----
+Este não é um framework e não tem instalador. Também não faz sentido copiar tudo para qualquer projeto. A ideia é pegar as partes que resolvem um problema real: contexto perdido entre sessões, agente alterando coisa demais, UI aprovada sem ser aberta, release sem evidência, dois agentes mexendo no mesmo arquivo, documentação externa desatualizada, esse tipo de coisa.
 
-## O que é
+## Por onde começar
 
-O **Matte AI Coding Toolkit** é um conjunto de regras, playbooks, prompts e templates para transformar agentes de IA em parte previsível do fluxo de desenvolvimento.
+Se você chegou agora, eu faria assim:
 
-A proposta não é "colar um prompt enorme e torcer". O fluxo força o agente a entender o projeto existente, definir critérios de aceite, planejar, implementar em etapas controladas, testar, revisar e só então considerar a tarefa concluída.
+1. leia [`docs/00-overview.md`](docs/00-overview.md);
+2. veja o [`docs/02-playbook.md`](docs/02-playbook.md) para entender o fluxo completo;
+3. escolha o workflow que combina com a tarefa em [`docs/workflows/`](docs/workflows/);
+4. copie [`templates/AGENTS.md`](templates/AGENTS.md) para o projeto e adapte só o que fizer sentido;
+5. use os prompts como ponto de partida, não como texto sagrado.
+
+Se quiser ver primeiro como isso fica aplicado, vá direto para [`examples/`](examples/).
+
+## A regra que segura o resto
+
+> Código escrito não é evidência de que a tarefa terminou.
+
+Para uma mudança pequena, às vezes compilar e rodar um teste específico é suficiente. Para uma alteração de UI, quero ver a tela. Para uma automação que controla outro processo, quero ver o isolamento funcionando. Para uma release, quero saber qual artefato foi publicado e de qual commit ele saiu.
+
+O nível de validação muda conforme o risco. A exigência de evidência, não.
+
+## O fluxo
+
+Na maioria das tarefas maiores, sigo esta ordem:
 
 ```text
-Entender → Mapear → Planejar → Delegar → Implementar → Testar → Revisar → Validar → Registrar
+entender o pedido
+-> olhar o projeto como ele existe hoje
+-> reproduzir ou mapear o comportamento atual
+-> definir o que precisa mudar
+-> implementar em partes pequenas
+-> testar no nível certo
+-> revisar o diff
+-> registrar decisões que precisam sobreviver à sessão
 ```
 
-O toolkit é **Codex-first**, mas os princípios são compatíveis com outros agentes que consigam ler instruções do repositório, executar comandos e trabalhar com Git.
+Não uso planejamento longo para trocar um texto ou corrigir um typo. Também não começo uma migração, refactor amplo ou correção de bug difícil editando o primeiro arquivo que parece relacionado.
 
-## Princípio central
+## O que tem no repositório
 
-> Código escrito não é sucesso. Comportamento validado é sucesso.
+### `AGENTS.md`
 
-Uma tarefa só pode ser considerada concluída quando, quando aplicável:
+O [`AGENTS.md`](AGENTS.md) da raiz é o contrato usado neste próprio toolkit. Em `templates/AGENTS.md` há uma versão menor para copiar para outros projetos.
 
-- implementação concluída;
-- comportamento real testado;
-- regressões verificadas;
-- lint aprovado;
-- typecheck aprovado;
-- testes aprovados;
-- build de produção aprovado;
-- UI revisada visualmente;
-- evidências apresentadas;
-- documentação e decisões atualizadas.
+Ele define coisas que não quero renegociar a cada sessão: inspecionar antes de reescrever, reproduzir bugs, não enfraquecer teste para deixar CI verde, separar implementação de revisão quando o risco justificar e reportar o que foi realmente validado.
 
-## Fluxo principal
+### Workflows
 
-```mermaid
-flowchart LR
-    A[Entender pedido] --> B[Inspecionar projeto]
-    B --> C[Mapear arquitetura e riscos]
-    C --> D[Definir critérios de aceite]
-    D --> E[Plano executável]
-    E --> F[Ondas de implementação]
-    F --> G[Testes e quality gates]
-    G --> H[Revisão independente]
-    H --> I{Critérios atendidos?}
-    I -- não --> F
-    I -- sim --> J[Documentar e entregar]
+Em [`docs/workflows/`](docs/workflows/) existem fluxos diferentes para situações que parecem parecidas, mas pedem decisões diferentes:
+
+- [`new-project.md`](docs/workflows/new-project.md) — quando ainda dá para escolher a fundação;
+- [`existing-project.md`](docs/workflows/existing-project.md) — quando preservar comportamento importa tanto quanto adicionar coisa nova;
+- [`bug-fix.md`](docs/workflows/bug-fix.md) — reproduzir, achar a camada errada e deixar regressão coberta;
+- [`ui-rebuild.md`](docs/workflows/ui-rebuild.md) — mexer em interface olhando a interface;
+- [`production-release.md`](docs/workflows/production-release.md) — gates, artefato, deploy e smoke check;
+- [`code-review.md`](docs/workflows/code-review.md) — revisão independente sem reimplementar a solução inteira.
+
+### Ferramentas e práticas
+
+A pasta [`docs/tools/`](docs/tools/) é mais específica. Cada guia tenta responder duas perguntas: quando isso ajuda e quando só aumenta a cerimônia.
+
+Tem material sobre:
+
+- [quality gates](docs/tools/01-quality-gates.md);
+- [validação no navegador](docs/tools/02-browser-validation.md);
+- [documentação e contexto atual](docs/tools/03-context-and-docs.md);
+- [memória persistente de projeto](docs/tools/04-persistent-memory.md);
+- [GitHub como trilha de trabalho](docs/tools/05-github-workflow.md);
+- [uso de MCP](docs/tools/06-mcp-strategy.md);
+- [orquestração de subagentes](docs/tools/07-subagent-orchestration.md);
+- [automação de release](docs/tools/08-release-automation.md).
+
+### Prompts
+
+Os arquivos em [`prompts/`](prompts/) são atalhos para tarefas recorrentes. Eu prefiro prompts que apontam para regras do repositório e pedem evidência, em vez de prompts enormes tentando prever todo caso possível.
+
+Hoje existem prompts para inspeção de projeto, build de projeto, bug fix, revisão de UI/UX, auditoria de produção e checklist de release.
+
+### Memória de projeto
+
+Em [`templates/`](templates/) ficam arquivos simples que ajudam quando o projeto atravessa muitas sessões:
+
+```text
+PROJECT.md       objetivo, escopo e restrições
+ARCHITECTURE.md  desenho atual e invariantes
+DECISIONS.md     decisões que não são óbvias olhando só o código
+TODO.md          trabalho aberto e follow-ups
+AGENTS.md        regras para quem mexe no repositório
 ```
 
-## Estrutura
+Não uso isso como diário. Se uma informação não vai ajudar uma sessão futura a tomar uma decisão melhor, provavelmente não precisa entrar ali.
+
+## Três exemplos
+
+Os exemplos são deliberadamente pequenos e não dependem de um stack específico:
+
+- [`examples/web-dashboard.md`](examples/web-dashboard.md) mostra um bug em filtros de mês/quinzena e por que a investigação começa no caminho dos dados, não no componente que exibiu o erro;
+- [`examples/desktop-automation.md`](examples/desktop-automation.md) trata isolamento entre duas instâncias de uma automação Windows;
+- [`examples/mobile-portal.md`](examples/mobile-portal.md) mostra uma correção de viewport/safe area sem criar CSS específico para um único iPhone.
+
+## Coisas que eu evito
+
+Algumas regras apareceram porque são atalhos tentadores:
+
+- trocar arquitetura antes de entender por que ela ficou daquele jeito;
+- apagar comportamento funcional para simplificar a implementação;
+- dizer que uma UI está pronta olhando só o JSX/CSS;
+- rodar dois agentes em paralelo no mesmo conjunto de arquivos sem dono claro;
+- transformar toda ferramenta nova em requisito do projeto;
+- esconder warning, teste não executado ou limitação de ambiente;
+- guardar decisão importante apenas no chat;
+- usar produção como primeiro teste significativo quando existe caminho mais seguro.
+
+## Estrutura atual
 
 ```text
 Matte-AI-Coding-Toolkit/
-├── AGENTS.md                    regras globais para agentes
+├── AGENTS.md
 ├── README.md
 ├── LICENSE
 ├── NOTICE.md
@@ -71,116 +133,21 @@ Matte-AI-Coding-Toolkit/
 │   ├── 01-installation.md
 │   ├── 02-playbook.md
 │   ├── codex/
-│   │   ├── codex-workflow.md
-│   │   ├── agents.md
-│   │   └── mcp.md
+│   ├── tools/
 │   └── workflows/
-│       ├── new-project.md
-│       ├── existing-project.md
-│       ├── bug-fix.md
-│       ├── ui-rebuild.md
-│       ├── production-release.md
-│       └── code-review.md
+├── examples/
 ├── prompts/
-│   ├── build-project.md
-│   ├── inspect-project.md
-│   ├── fix-bug.md
-│   ├── ui-ux-review.md
-│   ├── production-audit.md
-│   └── release-checklist.md
 └── templates/
-    ├── AGENTS.md
-    ├── PROJECT.md
-    ├── ARCHITECTURE.md
-    ├── DECISIONS.md
-    └── TODO.md
 ```
 
-## Como usar
+## Origem
 
-### Projeto existente
+Este repositório começou como uma adaptação do [Vibe Coding Toolkit](https://github.com/soumatheusgomes/vibe-coding-toolkit), de Matheus Gomes. O projeto original é distribuído sob MIT License.
 
-1. Leia [`docs/workflows/existing-project.md`](docs/workflows/existing-project.md).
-2. Copie [`templates/AGENTS.md`](templates/AGENTS.md) para a raiz do projeto e adapte.
-3. Use [`prompts/inspect-project.md`](prompts/inspect-project.md) para iniciar a primeira auditoria.
-4. Não permita implementação antes do agente mapear arquitetura, estado atual, riscos e critérios de aceite.
+Mantive a atribuição e a licença, mas reorganizei o material em torno do meu fluxo com Codex, `AGENTS.md`, validação de comportamento, workflows por tipo de tarefa e memória simples dentro do próprio repositório.
 
-### Projeto novo
-
-1. Leia [`docs/workflows/new-project.md`](docs/workflows/new-project.md).
-2. Preencha `PROJECT.md` e `ARCHITECTURE.md`.
-3. Use [`prompts/build-project.md`](prompts/build-project.md).
-4. Exija entregas incrementais verificáveis em vez de um único salto até "pronto".
-
-### Bugs
-
-Use [`docs/workflows/bug-fix.md`](docs/workflows/bug-fix.md) e [`prompts/fix-bug.md`](prompts/fix-bug.md). O fluxo exige reprodução antes da correção e teste de regressão depois dela.
-
-### Produção
-
-Antes de publicar, use [`docs/workflows/production-release.md`](docs/workflows/production-release.md) e [`prompts/release-checklist.md`](prompts/release-checklist.md).
-
-## Regras que não se negociam
-
-- Não reescrever arquitetura sem primeiro entender a existente.
-- Não apagar comportamento funcional para simplificar implementação.
-- Não declarar sucesso com base apenas em compilação.
-- Não esconder warnings, falhas ou testes ignorados.
-- Não fazer mudanças destrutivas sem necessidade clara e evidência.
-- Não misturar exploração, implementação e revisão como se fossem a mesma etapa.
-- Não usar múltiplos agentes no mesmo arquivo simultaneamente sem coordenação explícita.
-- Não criar abstração só porque "parece mais profissional".
-- Não usar produção como ambiente de teste quando houver alternativa segura.
-- Não deixar decisões importantes existirem apenas no histórico do chat.
-
-## Filosofia de agentes
-
-O agente principal deve atuar como **orquestrador** quando a tarefa for grande: entende o sistema, decompõe o problema, define fronteiras e coordena revisões.
-
-Subagentes ou agentes especializados são úteis para tarefas independentes como arquitetura, banco de dados, segurança, testes, performance, UI/UX, revisão de código e documentação.
-
-Paralelismo só é usado quando duas tarefas não disputam os mesmos arquivos, estados ou decisões.
-
-## Quality gates
-
-Cada projeto deve definir seus próprios comandos reais. Como padrão conceitual:
-
-```text
-format/lint
-    ↓
-typecheck
-    ↓
-testes unitários
-    ↓
-testes de integração
-    ↓
-build de produção
-    ↓
-smoke test / E2E quando aplicável
-```
-
-Nenhuma etapa deve ser marcada como aprovada se foi pulada sem justificativa explícita.
-
-## Memória de projeto
-
-O contexto importante deve sobreviver à sessão do agente. Para isso, o toolkit usa arquivos simples e versionáveis:
-
-- `PROJECT.md` — objetivo, escopo e restrições;
-- `ARCHITECTURE.md` — desenho atual e invariantes;
-- `DECISIONS.md` — decisões técnicas relevantes;
-- `TODO.md` — trabalho aberto e próximos passos;
-- `AGENTS.md` — regras operacionais para agentes.
-
-A memória do chat ajuda. A memória do repositório governa.
-
-## Créditos e origem
-
-Este projeto foi inspirado e derivado do **Vibe Coding Toolkit**, de Matheus Gomes (`soumatheusgomes/vibe-coding-toolkit`), distribuído sob a MIT License.
-
-O Matte AI Coding Toolkit reorganiza e expande a proposta com foco em Codex-first, governança explícita via `AGENTS.md`, workflows orientados a critérios de aceite, inspeção obrigatória de projetos existentes, revisão visual para UI, release gates e documentação persistente de arquitetura e decisões.
-
-Consulte [`NOTICE.md`](NOTICE.md) para atribuição completa.
+A atribuição completa está em [`NOTICE.md`](NOTICE.md).
 
 ## Licença
 
-MIT. Consulte [`LICENSE`](LICENSE).
+MIT. Veja [`LICENSE`](LICENSE).
