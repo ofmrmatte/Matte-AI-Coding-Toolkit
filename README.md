@@ -1,5 +1,6 @@
 # Matte AI Coding Toolkit
 
+[![Release](https://img.shields.io/github/v/release/ofmrmatte/Matte-AI-Coding-Toolkit?label=version)](https://github.com/ofmrmatte/Matte-AI-Coding-Toolkit/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![docs-check](https://github.com/ofmrmatte/Matte-AI-Coding-Toolkit/actions/workflows/docs-check.yml/badge.svg)](https://github.com/ofmrmatte/Matte-AI-Coding-Toolkit/actions/workflows/docs-check.yml)
 
@@ -145,6 +146,12 @@ Ele verifica:
 
 A validação principal fica em [`scripts/check_docs.py`](scripts/check_docs.py) e usa apenas a biblioteca padrão do Python.
 
+## Releases
+
+A versão atual fica em [`VERSION`](VERSION). Quando esse arquivo muda na `main`, [`.github/workflows/release.yml`](.github/workflows/release.yml) valida as notas correspondentes em `.github/release-notes/`, cria a tag `vX.Y.Z` e publica a GitHub Release.
+
+A versão estável atual é [`v1.0.0`](https://github.com/ofmrmatte/Matte-AI-Coding-Toolkit/releases/tag/v1.0.0).
+
 ## Coisas que eu evito
 
 Algumas regras apareceram porque são atalhos tentadores:
@@ -163,8 +170,10 @@ Algumas regras apareceram porque são atalhos tentadores:
 ```text
 Matte-AI-Coding-Toolkit/
 ├── .github/
+│   ├── release-notes/
 │   └── workflows/
-│       └── docs-check.yml
+│       ├── docs-check.yml
+│       └── release.yml
 ├── docs/
 ├── examples/
 │   └── sample-project/
@@ -179,7 +188,8 @@ Matte-AI-Coding-Toolkit/
 ├── CONTRIBUTING.md
 ├── LICENSE
 ├── NOTICE.md
-└── README.md
+├── README.md
+└── VERSION
 ```
 
 ## Origem
