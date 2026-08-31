@@ -1,77 +1,40 @@
-# MCP e ferramentas conectadas
+# MCP no fluxo com Codex
 
-MCPs, conectores e APIs ampliam o que o agente consegue observar e executar. Eles também ampliam a superfície de erro e de impacto.
+A estratégia geral está em [`../tools/06-mcp-strategy.md`](../tools/06-mcp-strategy.md). Neste arquivo ficam só algumas regras práticas para sessões de Codex com ferramentas conectadas.
 
-## Regra principal
+## Prefira a ferramenta que já conhece o objeto
 
-Use uma integração quando ela aproxima o agente da fonte de verdade ou elimina uma etapa manual relevante.
+Se a tarefa é sobre uma PR, use GitHub. Se é sobre uma tela, use navegador. Se é sobre schema atual, consulte o banco ou a fonte oficial correspondente.
 
-Não instale uma ferramenta apenas porque ela existe.
+Isso reduz cópia manual e evita trabalhar com um estado que já mudou.
 
-## Classes de ferramenta
+## Leia antes de escrever
 
-### Leitura
+Quando a ferramenta permite leitura e escrita, comece lendo o alvo real. Antes de atualizar arquivo, configuração, issue, deploy ou banco, confirme que você está olhando o recurso certo e no ambiente certo.
 
-Exemplos: documentação, repositórios, logs, métricas, banco em modo read-only.
+Para ações com impacto alto, o estado anterior também é parte do contexto de rollback.
 
-Risco normalmente menor, mas ainda pode haver dados sensíveis.
+## Não transforme indisponibilidade em bloqueio global
 
-### Escrita reversível
+Se um conector falhar, separe o que depende dele do que não depende.
 
-Exemplos: criar branch, abrir PR, criar draft, alterar configuração com rollback simples.
-
-Exige validação do alvo e registro do resultado.
-
-### Escrita de alto impacto
-
-Exemplos: produção, banco com dados reais, deploy, exclusão, envio de mensagens, mudanças de infraestrutura.
-
-Exige escopo explícito, confirmação quando aplicável, rollback e smoke check.
-
-## Checklist antes de conectar
-
-1. Qual problema concreto a ferramenta resolve?
-2. Qual é o menor conjunto de permissões necessário?
-3. O agente precisa escrever ou apenas ler?
-4. Qual ambiente será acessado?
-5. Há ação irreversível?
-6. Como auditar o que foi feito?
-7. Como revogar a credencial?
-
-## Fonte de verdade
-
-Quando uma integração oficial está disponível, prefira consultar o estado atual por ela em vez de depender de documentação local potencialmente desatualizada.
-
-Exemplos:
-
-- GitHub para PRs e branches reais;
-- provedor de deploy para status do deployment;
-- banco para schema atual;
-- documentação oficial para limites de API;
-- navegador real para comportamento final da UI.
-
-## Falha de ferramenta
-
-Uma integração indisponível não deve bloquear trabalho que possa continuar com segurança.
-
-Separe:
+Exemplo:
 
 ```text
-trabalho independente da credencial → continuar
-trabalho que exige a credencial → marcar bloqueio exato
+sem acesso ao deploy -> ainda dá para corrigir código, testar e gerar build
+sem acesso ao banco real -> ainda dá para revisar migration e testar em banco local
 ```
 
-Não invente resultado de uma operação externa que não pôde ser executada.
+Bloqueie apenas a etapa que realmente precisa da ferramenta.
 
-## Produção
+## Permissões
 
-Para ações de produção, registre no relatório:
+Quando houver escolha, prefira leitura para investigação e escrita apenas para o que a tarefa precisa executar.
 
-- alvo;
-- ação;
-- resultado;
-- identificador de deployment/commit quando houver;
-- smoke test realizado;
-- rollback disponível.
+Uma conexão ampla com produção não é um atalho de desenvolvimento.
 
-"Deploy executado" e "produção saudável" são afirmações diferentes.
+## Evidência externa
+
+Depois de uma ação externa, registre o identificador que permite conferência depois: commit, PR, deployment, migration, job, release ou equivalente.
+
+"A ferramenta respondeu sucesso" é menos útil do que "deployment X do commit Y ficou saudável no smoke check Z".
