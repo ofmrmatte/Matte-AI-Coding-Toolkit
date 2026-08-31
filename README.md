@@ -1,12 +1,13 @@
 # Matte AI Coding Toolkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![docs-check](https://github.com/ofmrmatte/Matte-AI-Coding-Toolkit/actions/workflows/docs-check.yml/badge.svg)](https://github.com/ofmrmatte/Matte-AI-Coding-Toolkit/actions/workflows/docs-check.yml)
 
 Um conjunto de arquivos, prompts e rotinas que uso como referência para trabalhar com agentes de código sem depender de uma conversa perfeita do começo ao fim.
 
 O foco principal é Codex, mas quase tudo aqui é independente de modelo. Se o agente consegue ler o repositório, executar comandos, consultar ferramentas e trabalhar com Git, o fluxo continua válido.
 
-Este não é um framework e não tem instalador. Também não faz sentido copiar tudo para qualquer projeto. A ideia é pegar as partes que resolvem um problema real: contexto perdido entre sessões, agente alterando coisa demais, UI aprovada sem ser aberta, release sem evidência, dois agentes mexendo no mesmo arquivo, documentação externa desatualizada, esse tipo de coisa.
+Este não é um framework. Também não faz sentido copiar tudo para qualquer projeto. A ideia é pegar as partes que resolvem um problema real: contexto perdido entre sessões, agente alterando coisa demais, UI aprovada sem ser aberta, release sem evidência, dois agentes mexendo no mesmo arquivo, documentação externa desatualizada, esse tipo de coisa.
 
 ## Por onde começar
 
@@ -18,7 +19,29 @@ Se você chegou agora, eu faria assim:
 4. copie [`templates/AGENTS.md`](templates/AGENTS.md) para o projeto e adapte só o que fizer sentido;
 5. use os prompts como ponto de partida, não como texto sagrado.
 
-Se quiser ver primeiro como isso fica aplicado, vá direto para [`examples/`](examples/).
+Se quiser ver primeiro como isso fica aplicado, vá direto para [`examples/sample-project/PROJECT.md`](examples/sample-project/PROJECT.md).
+
+## Bootstrap
+
+Quem já sabe que quer usar os cinco arquivos de contexto pode copiar tudo com um comando.
+
+PowerShell:
+
+```powershell
+./scripts/bootstrap.ps1 C:\Projetos\MeuProjeto
+```
+
+Bash:
+
+```bash
+./scripts/bootstrap.sh /caminho/do/projeto
+```
+
+Os scripts copiam `AGENTS.md`, `PROJECT.md`, `ARCHITECTURE.md`, `DECISIONS.md` e `TODO.md`. Arquivos existentes não são sobrescritos por padrão.
+
+O bootstrap só prepara a estrutura. Ainda é preciso preencher os arquivos com o projeto real.
+
+Mais detalhes em [`docs/01-installation.md`](docs/01-installation.md).
 
 ## A regra que segura o resto
 
@@ -49,7 +72,7 @@ Não uso planejamento longo para trocar um texto ou corrigir um typo. Também n�
 
 ### `AGENTS.md`
 
-O [`AGENTS.md`](AGENTS.md) da raiz é o contrato usado neste próprio toolkit. Em `templates/AGENTS.md` há uma versão menor para copiar para outros projetos.
+O [`AGENTS.md`](AGENTS.md) da raiz é o contrato usado neste próprio toolkit. Em [`templates/AGENTS.md`](templates/AGENTS.md) há uma versão menor para copiar para outros projetos.
 
 Ele define coisas que não quero renegociar a cada sessão: inspecionar antes de reescrever, reproduzir bugs, não enfraquecer teste para deixar CI verde, separar implementação de revisão quando o risco justificar e reportar o que foi realmente validado.
 
@@ -99,13 +122,28 @@ AGENTS.md        regras para quem mexe no repositório
 
 Não uso isso como diário. Se uma informação não vai ajudar uma sessão futura a tomar uma decisão melhor, provavelmente não precisa entrar ali.
 
-## Três exemplos
+## Exemplos
 
-Os exemplos são deliberadamente pequenos e não dependem de um stack específico:
+Os recortes em [`examples/`](examples/) mostram tipos diferentes de trabalho:
 
-- [`examples/web-dashboard.md`](examples/web-dashboard.md) mostra um bug em filtros de mês/quinzena e por que a investigação começa no caminho dos dados, não no componente que exibiu o erro;
-- [`examples/desktop-automation.md`](examples/desktop-automation.md) trata isolamento entre duas instâncias de uma automação Windows;
-- [`examples/mobile-portal.md`](examples/mobile-portal.md) mostra uma correção de viewport/safe area sem criar CSS específico para um único iPhone.
+- [`web-dashboard.md`](examples/web-dashboard.md) — bug em filtros de mês/quinzena;
+- [`desktop-automation.md`](examples/desktop-automation.md) — isolamento entre instâncias de uma automação Windows;
+- [`mobile-portal.md`](examples/mobile-portal.md) — viewport e safe area em mobile;
+- [`sample-project/`](examples/sample-project/PROJECT.md) — os cinco arquivos de contexto preenchidos para uma aplicação pequena de tarefas.
+
+## Checks do próprio toolkit
+
+O workflow [`.github/workflows/docs-check.yml`](.github/workflows/docs-check.yml) roda em `push` para `main` e em pull requests.
+
+Ele verifica:
+
+- presença dos arquivos obrigatórios;
+- links locais dos arquivos Markdown;
+- sintaxe do bootstrap Bash;
+- execução real do bootstrap Bash;
+- execução real do bootstrap PowerShell.
+
+A validação principal fica em [`scripts/check_docs.py`](scripts/check_docs.py) e usa apenas a biblioteca padrão do Python.
 
 ## Coisas que eu evito
 
@@ -124,20 +162,24 @@ Algumas regras apareceram porque são atalhos tentadores:
 
 ```text
 Matte-AI-Coding-Toolkit/
+├── .github/
+│   └── workflows/
+│       └── docs-check.yml
+├── docs/
+├── examples/
+│   └── sample-project/
+├── prompts/
+├── scripts/
+│   ├── bootstrap.ps1
+│   ├── bootstrap.sh
+│   └── check_docs.py
+├── templates/
 ├── AGENTS.md
-├── README.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
 ├── LICENSE
 ├── NOTICE.md
-├── docs/
-│   ├── 00-overview.md
-│   ├── 01-installation.md
-│   ├── 02-playbook.md
-│   ├── codex/
-│   ├── tools/
-│   └── workflows/
-├── examples/
-├── prompts/
-└── templates/
+└── README.md
 ```
 
 ## Origem
