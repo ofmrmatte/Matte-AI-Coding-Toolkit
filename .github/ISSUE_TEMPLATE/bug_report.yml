@@ -1,0 +1,42 @@
+name: Bug report
+description: Reporte um problema reproduzível no toolkit.
+title: "[bug] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: "Descreva o comportamento observado e como reproduzir."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema
+      description: O que aconteceu?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Como reproduzir
+      description: Passos mínimos para chegar ao problema.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Ex.: Windows 11 + PowerShell 7, Ubuntu + Bash, Codex CLI etc.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidência
+      description: Logs, saída do CI ou outro dado útil. Remova informações sensíveis.
